@@ -42,7 +42,7 @@ build: $(ICON_ICNS)
 		--enable-plugin=tk-inter \
 		--tcl-library-dir=/opt/local/lib/tcl8.6 \
 		--tk-library-dir=/opt/local/lib/tk8.6 \
-		main.py
+		ip_switcher.py
 
 
 clean:

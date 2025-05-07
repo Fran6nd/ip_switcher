@@ -1,5 +1,6 @@
 dist/main.dist
 dist/main.build
+dist
 *.iconset
 *.icns
 .DS_Store
