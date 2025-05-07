@@ -1,0 +1,6 @@
+dist/main.dist
+dist/main.build
+*.iconset
+*.icns
+.DS_Store
+nuitka-crash-report.xml

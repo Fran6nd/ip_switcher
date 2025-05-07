@@ -6,10 +6,21 @@ from tkinter import messagebox
 
 # Your static IP presets: name -> [IP, Subnet Mask, Router]
 presets = {
-    "Home Static": ["192.168.1.100", "255.255.255.0", "192.168.1.1"],
-    "Office Static": ["10.0.0.50", "255.255.255.0", "10.0.0.1"],
-    "Use DHCP": None
+    "Alouette": ["192.168.1.149", "255.255.255.0", "192.168.1.1"],
+    "DHCP": None
 }
+
+def run_with_privileges(command):
+    """
+    Runs a shell command with macOS admin rights using osascript
+    """
+    escaped_command = command.replace('"', '\\"')
+    script = f'do shell script "{escaped_command}" with administrator privileges'
+    try:
+        subprocess.run(["osascript", "-e", script], check=True)
+    except subprocess.CalledProcessError:
+        messagebox.showerror("Permission Denied", f"Command failed or was cancelled:\n{command}")
+        exit(1)
 
 def get_active_interface():
     try:
@@ -24,7 +35,6 @@ def get_active_interface():
             if name_line and port_line:
                 device = name_line.split(":")[1].strip()
                 port_name = port_line.split(":")[1].strip()
-                # Check IP info
                 try:
                     ip_output = subprocess.check_output(["ipconfig", "getifaddr", device], text=True).strip()
                     if ip_output:
@@ -48,12 +58,13 @@ def apply_preset():
         return
 
     if presets[selected] is None:
-        subprocess.run(["sudo", "networksetup", "-setdhcp", port_name])
-        messagebox.showinfo("Success", f"{port_name} set to DHCP.")
+        cmd = f'networksetup -setdhcp "{port_name}"'
     else:
         ip, subnet, router = presets[selected]
-        subprocess.run(["sudo", "networksetup", "-setmanual", port_name, ip, subnet, router])
-        messagebox.showinfo("Success", f"{port_name} set to:\nIP: {ip}\nSubnet: {subnet}\nRouter: {router}")
+        cmd = f'networksetup -setmanual "{port_name}" {ip} {subnet} {router}'
+
+    run_with_privileges(cmd)
+    messagebox.showinfo("Success", f"{port_name} set to '{selected}' profile.")
 
 # GUI Setup
 root = tk.Tk()
@@ -74,4 +85,5 @@ listbox.pack(padx=10, pady=10)
 apply_btn = tk.Button(root, text="Apply Preset", command=apply_preset)
 apply_btn.pack(pady=10)
 
+# Start GUI
 root.mainloop()
