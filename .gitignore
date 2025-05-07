@@ -5,3 +5,4 @@ dist
 *.icns
 .DS_Store
 nuitka-crash-report.xml
+presets.json
