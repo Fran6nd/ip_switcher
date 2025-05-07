@@ -4,7 +4,7 @@ import subprocess
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-# Initial IP presets (modifiable in UI)
+# Editable presets: name -> [IP, Subnet Mask, Router] or None for DHCP
 presets = {
     "Alouette": ["192.168.1.149", "255.255.255.0", "192.168.1.1"],
     "DHCP": None,
@@ -21,54 +21,66 @@ def run_with_privileges(command):
         messagebox.showerror("Permission Denied", f"Command failed or was cancelled:\n{command}")
         exit(1)
 
-def get_active_interface():
+def list_all_interfaces():
+    interfaces = []
     try:
         output = subprocess.check_output(["networksetup", "-listallhardwareports"], text=True)
         blocks = output.strip().split("\n\n")
         for block in blocks:
             lines = block.splitlines()
-            if len(lines) < 3:
-                continue
-            name_line = next((l for l in lines if l.startswith("Device: ")), None)
-            port_line = next((l for l in lines if l.startswith("Hardware Port: ")), None)
-            if name_line and port_line:
-                device = name_line.split(":")[1].strip()
-                port_name = port_line.split(":")[1].strip()
-                try:
-                    ip_output = subprocess.check_output(["ipconfig", "getifaddr", device], text=True).strip()
-                    if ip_output:
-                        return port_name, device
-                except subprocess.CalledProcessError:
-                    continue
+            port = device = None
+            for line in lines:
+                if line.startswith("Hardware Port:"):
+                    port = line.split(":")[1].strip()
+                elif line.startswith("Device:"):
+                    device = line.split(":")[1].strip()
+            if port and device:
+                interfaces.append((port, device))
     except Exception as e:
-        messagebox.showerror("Error", f"Failed to detect active interface: {e}")
+        messagebox.showerror("Error", f"Failed to list interfaces: {e}")
+    return interfaces
+
+def get_active_interface():
+    for port, device in list_all_interfaces():
+        try:
+            ip_output = subprocess.check_output(["ipconfig", "getifaddr", device], text=True).strip()
+            if ip_output:
+                return port, device
+        except subprocess.CalledProcessError:
+            continue
     return None, None
 
 def apply_settings(name, ip_entry, mask_entry, router_entry):
-    port_name, _ = get_active_interface()
-    if not port_name:
-        messagebox.showerror("Error", "No active network interface found.")
+    selected_interface = interface_var.get()
+    matching = next((d for p, d in interfaces if p == selected_interface), None)
+    if not matching:
+        messagebox.showerror("Error", "No valid network interface selected.")
         return
 
     if name.lower() == "dhcp":
-        cmd = f'networksetup -setdhcp "{port_name}"'
+        cmd = f'networksetup -setdhcp "{selected_interface}"'
     else:
         ip = ip_entry.get()
         mask = mask_entry.get()
         router = router_entry.get()
         presets[name] = [ip, mask, router]
-        cmd = f'networksetup -setmanual "{port_name}" {ip} {mask} {router}'
+        cmd = f'networksetup -setmanual "{selected_interface}" {ip} {mask} {router}'
 
     run_with_privileges(cmd)
-    messagebox.showinfo("Success", f"{port_name} set to '{name}' profile.")
+    messagebox.showinfo("Success", f"{selected_interface} set to '{name}' profile.")
 
 # GUI setup
 root = tk.Tk()
 root.title("macOS IP Preset Selector")
 
-interface_name, _ = get_active_interface()
-if interface_name:
-    root.title(f"IP Presets - Interface: {interface_name}")
+interfaces = list_all_interfaces()
+active_port, _ = get_active_interface()
+interface_names = [p for p, d in interfaces]
+
+tk.Label(root, text="Select Network Interface:").pack(pady=5)
+interface_var = tk.StringVar(value=active_port if active_port else interface_names[0])
+interface_menu = ttk.Combobox(root, textvariable=interface_var, values=interface_names, state="readonly")
+interface_menu.pack(pady=5)
 
 notebook = ttk.Notebook(root)
 notebook.pack(padx=10, pady=10, fill='both', expand=True)
