@@ -2,7 +2,7 @@
 
 ## Overview
 
-IP Switcher is a macOS application that allows you to easily switch between different IP address configurations (DHCP or Static) for your network interface. You can use predefined presets or manually switch between IP configurations with a simple GUI.
+IP Switcher is a macOS and Windows application that allows you to easily switch between different IP address configurations (DHCP or Static) for your network interface. You can use predefined presets or manually switch between IP configurations with a simple GUI.
 
 ## Features
 
@@ -14,7 +14,7 @@ IP Switcher is a macOS application that allows you to easily switch between diff
 ## Requirements
 
 - macOS 10.14 or higher.
-- The application is bundled as a macOS `.app`, which is standalone and does not require installation.
+- The application is bundled as a macOS `.app` and a Windows `.exe`, which are standalone and does not require installation.
 
 ## Download the macOS Binary
 

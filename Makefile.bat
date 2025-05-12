@@ -1,0 +1,1 @@
+pyinstaller --onefile --noconsole --windowed --icon=ip_switcher.ico ip_switcher.py

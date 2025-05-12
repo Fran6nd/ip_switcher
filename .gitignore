@@ -6,3 +6,15 @@ dist
 .DS_Store
 nuitka-crash-report.xml
 presets.json
+ip_switcher.py
+build
+*.spec
+ip_switcher.bin
+*.so
+*.dylib
+*.tcl
+*.enc
+*.msg
+*.gif
+*.eps
+ip_switcher.dist
