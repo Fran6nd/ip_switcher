@@ -82,7 +82,9 @@ endif
 
 clean-xattrs:
 ifeq ($(SYSTEM),macOS)
-	@echo "Cleaning extended attributes..."
+	@echo "Cleaning extended attributes and resource forks..."
+	@find . -name "._*" -delete 2>/dev/null || true
+	@find . -name ".DS_Store" -delete 2>/dev/null || true
 	@find . -type f -exec xattr -c {} \; 2>/dev/null || true
 endif
 
@@ -97,10 +99,12 @@ build: clean-xattrs
 		--include-package=_tkinter \
 		ip_switcher.py
 ifeq ($(SYSTEM),macOS)
-	@echo "Cleaning extended attributes from built app..."
+	@echo "Cleaning extended attributes and resource forks from built app..."
 	@find ip_switcher.app -type f -exec xattr -c {} \; 2>/dev/null || true
+	@find ip_switcher.app -name "._*" -delete 2>/dev/null || true
+	@find ip_switcher.app -name ".DS_Store" -delete 2>/dev/null || true
 	@echo "Re-signing application..."
-	@codesign --force --deep --preserve-metadata=entitlements --sign - ip_switcher.app || true
+	@codesign --force --deep --sign - ip_switcher.app 2>/dev/null || echo "Warning: Code signing failed, but app should still work"
 endif
 
 
