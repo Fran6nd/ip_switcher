@@ -65,12 +65,14 @@ jobs:
       shell: bash
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ip_switcher-${{ matrix.os }}-${{ matrix.arch }}
         path: |
           ip_switcher-*.exe
           ip_switcher-macos-*
+        compression-level: 9
+        retention-days: 5
 
     - name: Upload release assets
       if: github.event_name == 'release'
@@ -79,3 +81,4 @@ jobs:
         files: |
           ip_switcher-*.exe
           ip_switcher-macos-*
+        fail_on_unmatched_files: true

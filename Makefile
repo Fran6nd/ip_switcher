@@ -93,7 +93,13 @@ ifeq ($(SYSTEM),macOS)
 	@rm -r $(ICONSET_DIR)
 endif
 
-build:
+clean-xattrs:
+ifeq ($(SYSTEM),macOS)
+	@echo "Cleaning extended attributes..."
+	@find . -type f -exec xattr -c {} \; 2>/dev/null || true
+endif
+
+build: clean-xattrs
 	@echo "Building standalone app with Nuitka for $(SYSTEM)..."
 	@echo "Using Tcl/Tk paths: $(TCL_PATH) $(TK_PATH)"
 	$(PYTHON) -m nuitka \
@@ -103,12 +109,20 @@ build:
 		--include-package=tkinter \
 		--include-package=_tkinter \
 		ip_switcher.py
+ifeq ($(SYSTEM),macOS)
+	@echo "Cleaning extended attributes from built app..."
+	@find ip_switcher.app -type f -exec xattr -c {} \; 2>/dev/null || true
+	@echo "Re-signing application..."
+	@codesign --force --deep --preserve-metadata=entitlements --sign - ip_switcher.app || true
+endif
 
 
 clean:
 	rm -rf build dist *.dist *.build *.app __pycache__ $(APP_NAME).build
 ifeq ($(SYSTEM),macOS)
 	rm -rf $(APP_NAME).iconset
+	find . -type f -name ".DS_Store" -delete
+	find . -type f -exec xattr -c {} \; 2>/dev/null || true
 endif
 	find . -type d -name "__pycache__" -exec rm -r {} +
 	find . -type f -name "*.pyc" -delete
@@ -127,6 +141,6 @@ check-deps:
 	@$(PYTHON) -c "import nuitka" 2>/dev/null || (echo "Error: nuitka not found. Please run: pip install nuitka" && exit 1)
 	@echo "All dependencies found."
 
-.PHONY: all icons build clean install check-deps
+.PHONY: all icons build clean install check-deps clean-xattrs
 
 all: check-deps icons build

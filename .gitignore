@@ -1,6 +1,7 @@
 dist/main.dist
 dist/main.build
 dist
+*.plist
 *.iconset
 *.icns
 .DS_Store
@@ -18,3 +19,5 @@ ip_switcher.bin
 *.gif
 *.eps
 ip_switcher.dist
+ip_switcher.app/Contents/MacOS/ip_switcher
+.gitignore
