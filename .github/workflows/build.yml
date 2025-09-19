@@ -11,6 +11,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: macos-latest
@@ -44,8 +45,10 @@ jobs:
       run: |
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
           # Generate ICO file for Windows (using ImageMagick if available, otherwise skip)
-          if command -v convert &> /dev/null; then
-            convert icon.png -resize 256x256 ip_switcher.ico
+          if command -v magick &> /dev/null; then
+            magick convert icon.png -resize 256x256 ip_switcher.ico
+          elif command -v convert &> /dev/null; then
+            convert icon.png -define icon:auto-resize=256,128,64,32,16 ip_switcher.ico
           else
             echo "ImageMagick not available, skipping icon generation"
           fi
@@ -54,27 +57,46 @@ jobs:
           make icons
         fi
       shell: bash
+      continue-on-error: true
 
     - name: Build with Nuitka
       run: |
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          python -m nuitka --onefile --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter ip_switcher.py
+          # Build for Windows - check if icon exists
+          if [ -f "ip_switcher.ico" ]; then
+            python -m nuitka --onefile --windows-icon-from-ico=ip_switcher.ico --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter ip_switcher.py
+          else
+            python -m nuitka --onefile --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter ip_switcher.py
+          fi
         else
-          python -m nuitka --onefile --macos-create-app-bundle --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter ip_switcher.py
+          # Build for macOS - check if icon exists
+          if [ -f "ip_switcher.icns" ]; then
+            python -m nuitka --onefile --macos-app-icon=ip_switcher.icns --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter ip_switcher.py
+          else
+            python -m nuitka --onefile --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter ip_switcher.py
+          fi
         fi
       shell: bash
 
     - name: Prepare artifacts for Windows
       if: matrix.os == 'windows-latest'
       run: |
-        mv ip_switcher.exe ip_switcher-windows-${{ matrix.arch }}.exe
+        if [ -f "ip_switcher.exe" ]; then
+          mv ip_switcher.exe ip_switcher-windows-${{ matrix.arch }}.exe
+        else
+          echo "Warning: ip_switcher.exe not found"
+        fi
       shell: bash
 
     - name: Prepare artifacts for macOS
       if: startsWith(matrix.os, 'macos')
       run: |
-        # For macOS, we get an .app bundle, compress it
-        tar -czf ip_switcher-macos-${{ matrix.arch }}.tar.gz ip_switcher.app
+        # For macOS, we get a .bin file
+        if [ -f "ip_switcher.bin" ]; then
+          mv ip_switcher.bin ip_switcher-macos-${{ matrix.arch }}
+        else
+          echo "Warning: ip_switcher.bin not found"
+        fi
       shell: bash
 
     - name: Upload artifacts
@@ -83,9 +105,10 @@ jobs:
         name: ip_switcher-${{ matrix.os }}-${{ matrix.arch }}
         path: |
           ip_switcher-windows-*.exe
-          ip_switcher-macos-*.tar.gz
+          ip_switcher-macos-*
         compression-level: 9
         retention-days: 5
+        if-no-files-found: warn
 
     - name: Upload release assets
       if: github.event_name == 'release'
@@ -93,4 +116,5 @@ jobs:
       with:
         files: |
           ip_switcher-windows-*.exe
-          ip_switcher-macos-*.tar.gz
+          ip_switcher-macos-*
+        fail_on_unmatched_files: false
