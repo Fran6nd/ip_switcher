@@ -1,0 +1,81 @@
+name: Build IP Switcher
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [created]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            arch: x86_64
+            python-arch: x64
+          - os: macos-14
+            arch: arm64
+            python-arch: arm64
+          - os: windows-latest
+            arch: x86_64
+            python-arch: x64
+          - os: windows-latest
+            arch: arm64
+            python-arch: arm64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        architecture: ${{ matrix.python-arch }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install nuitka
+
+    - name: Build with Nuitka
+      run: |
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          python -m nuitka --onefile --windows-icon-from-ico=ip_switcher.ico --enable-plugin=tk-inter ip_switcher.py
+        else
+          python -m nuitka --onefile --macos-create-app-bundle --macos-app-icon=ip_switcher.icns --enable-plugin=tk-inter ip_switcher.py
+        fi
+      shell: bash
+
+    - name: Rename artifacts for Windows
+      if: matrix.os == 'windows-latest'
+      run: |
+        mv ip_switcher.exe ip_switcher-windows-${{ matrix.arch }}.exe
+      shell: bash
+
+    - name: Rename artifacts for macOS
+      if: startsWith(matrix.os, 'macos')
+      run: |
+        mv ip_switcher.bin ip_switcher-macos-${{ matrix.arch }}
+      shell: bash
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ip_switcher-${{ matrix.os }}-${{ matrix.arch }}
+        path: |
+          ip_switcher-*.exe
+          ip_switcher-macos-*
+
+    - name: Upload release assets
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          ip_switcher-*.exe
+          ip_switcher-macos-*
