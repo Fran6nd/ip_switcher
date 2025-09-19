@@ -36,27 +36,33 @@ IP Switcher is a cross-platform application that allows you to easily switch bet
 
 ## Download and Installation
 
-You can download the latest version of IP Switcher from the [Releases](https://github.com/Fran6nd/ip_switcher/releases) page. Choose the appropriate version for your platform:
+### Option 1: Stable Releases
+Download the latest stable version from the [📦 Releases](https://github.com/Fran6nd/ip_switcher/releases/latest) page:
 
-- For Windows:
-  - `ip_switcher-windows-x86_64.exe` for 64-bit Intel/AMD processors
-  - `ip_switcher-windows-arm64.exe` for ARM processors
+- **Windows**: `ip_switcher-windows-x86_64.exe`
+- **macOS Intel**: `ip_switcher-macos-x86_64.tar.gz`
+- **macOS Apple Silicon**: `ip_switcher-macos-arm64.tar.gz`
 
-- For macOS:
-  - `ip_switcher-macos-x86_64` for Intel Macs
-  - `ip_switcher-macos-arm64` for Apple Silicon Macs
+### Option 2: Latest CI Builds
+Get the most recent builds from GitHub Actions:
+
+1. Go to [🔄 Actions](https://github.com/Fran6nd/ip_switcher/actions/workflows/build.yml)
+2. Click on the latest successful build (green checkmark)
+3. Scroll down to **Artifacts** section
+4. Download the appropriate build for your platform
 
 ### Installation
 
 #### Windows
-1. Download the appropriate `.exe` file for your system
-2. Move it to your desired location
-3. Double-click to run
+1. Download the `.exe` file for your system
+2. Move it to your desired location (e.g., `Program Files` or Desktop)
+3. Double-click to run (no installation required)
 
 #### macOS
-1. Download the appropriate binary for your system
-2. Make it executable: `chmod +x ip_switcher-macos-*`
-3. Run it directly or move to `/Applications`
+1. Download the appropriate `.tar.gz` file for your Mac
+2. Extract the archive: `tar -xzf ip_switcher-macos-*.tar.gz`
+3. Move the `.app` bundle to Applications: `mv ip_switcher.app /Applications/`
+4. Launch from Launchpad or Applications folder
 
 ## Building from Source
 
