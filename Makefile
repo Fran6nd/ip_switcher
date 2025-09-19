@@ -11,7 +11,7 @@ ifeq ($(OS),Windows_NT)
     SYSTEM := Windows
     PYTHON ?= python
     BINARY_EXT := .exe
-    NUITKA_FLAGS := --windows-icon-from-ico=$(ICON_ICO)
+    NUITKA_FLAGS := --windows-disable-console --windows-icon-from-ico=$(ICON_ICO)
     # Windows: Try to detect Tcl/Tk from Python installation
     TCL_PATH := $(shell $(PYTHON) -c "import tkinter, os; print(os.path.dirname(tkinter.__file__))" 2>/dev/null)
     ifeq (,$(TCL_PATH))
@@ -108,6 +108,15 @@ ifeq ($(SYSTEM),macOS)
 	@find ip_switcher.app -type f -exec xattr -c {} \; 2>/dev/null || true
 	@find ip_switcher.app -name "._*" -delete 2>/dev/null || true
 	@find ip_switcher.app -name ".DS_Store" -delete 2>/dev/null || true
+else ifeq ($(SYSTEM),Windows)
+	$(PYTHON) -m nuitka \
+		--onefile \
+		$(NUITKA_FLAGS) \
+		--enable-plugin=tk-inter \
+		--include-package=tkinter \
+		--include-package=_tkinter \
+		--assume-yes-for-downloads \
+		ip_switcher.py
 else
 	$(PYTHON) -m nuitka \
 		--onefile \
