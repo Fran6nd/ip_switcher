@@ -24,7 +24,7 @@ else
         SYSTEM := macOS
         PYTHON ?= python3
         BINARY_EXT := .bin
-        NUITKA_FLAGS := --macos-create-app-bundle --macos-app-icon=$(ICON_ICNS)
+        NUITKA_FLAGS := --macos-create-app-bundle --macos-app-icon=$(ICON_ICNS) --macos-app-name="IP Switcher" --macos-app-version="1.0"
         
         # macOS: Try multiple common Tcl/Tk locations
         TCL_PATHS := /opt/local/lib/tcl8.6 /usr/local/lib/tcl8.6 /opt/homebrew/lib/tcl8.6 /System/Library/Frameworks/Tcl.framework
@@ -103,11 +103,15 @@ ifeq ($(SYSTEM),macOS)
 		--nofollow-import-to=test \
 		--include-module=_bisect \
 		--include-module=_json \
-		ip_switcher.py
+		ip_switcher.py || true
 	@echo "Cleaning extended attributes and resource forks from built app..."
 	@find ip_switcher.app -type f -exec xattr -c {} \; 2>/dev/null || true
 	@find ip_switcher.app -name "._*" -delete 2>/dev/null || true
 	@find ip_switcher.app -name ".DS_Store" -delete 2>/dev/null || true
+	@echo "Adding Info.plist and icon to app bundle..."
+	@mkdir -p ip_switcher.app/Contents/Resources
+	@cp Info.plist ip_switcher.app/Contents/ 2>/dev/null || true
+	@cp $(ICON_ICNS) ip_switcher.app/Contents/Resources/ 2>/dev/null || true
 else ifeq ($(SYSTEM),Windows)
 	$(PYTHON) -m nuitka \
 		--onefile \

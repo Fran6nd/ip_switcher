@@ -72,14 +72,20 @@ jobs:
           # Build for macOS - create .app bundle, disable codesigning
           export NUITKA_MACOS_CODESIGN=no
           if [ -f "ip_switcher.icns" ]; then
-            python -m nuitka --onefile --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter --assume-yes-for-downloads --nofollow-import-to=unittest --nofollow-import-to=test --include-module=_bisect --include-module=_json --macos-create-app-bundle --macos-app-icon=ip_switcher.icns ip_switcher.py
+            python -m nuitka --onefile --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter --assume-yes-for-downloads --nofollow-import-to=unittest --nofollow-import-to=test --include-module=_bisect --include-module=_json --macos-create-app-bundle --macos-app-icon=ip_switcher.icns --macos-app-name="IP Switcher" --macos-app-version="1.0" ip_switcher.py
           else
-            python -m nuitka --onefile --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter --assume-yes-for-downloads --nofollow-import-to=unittest --nofollow-import-to=test --include-module=_bisect --include-module=_json --macos-create-app-bundle ip_switcher.py
+            python -m nuitka --onefile --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter --assume-yes-for-downloads --nofollow-import-to=unittest --nofollow-import-to=test --include-module=_bisect --include-module=_json --macos-create-app-bundle --macos-app-name="IP Switcher" --macos-app-version="1.0" ip_switcher.py
           fi
           # Clean extended attributes from .app bundle
           find ip_switcher.app -type f -exec xattr -c {} \; 2>/dev/null || true
           find ip_switcher.app -name "._*" -delete 2>/dev/null || true
           find ip_switcher.app -name ".DS_Store" -delete 2>/dev/null || true
+          # Add Info.plist and icon to app bundle
+          mkdir -p ip_switcher.app/Contents/Resources
+          cp Info.plist ip_switcher.app/Contents/ 2>/dev/null || true
+          if [ -f "ip_switcher.icns" ]; then
+            cp ip_switcher.icns ip_switcher.app/Contents/Resources/ 2>/dev/null || true
+          fi
         fi
       shell: bash
 
