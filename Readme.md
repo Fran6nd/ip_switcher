@@ -1,5 +1,21 @@
 # IP Switcher
 
+[![Build Status](https://github.com/Fran6nd/ip_switcher/actions/workflows/build.yml/badge.svg)](https://github.com/Fran6nd/ip_switcher/actions/workflows/build.yml)
+[![Latest Release](https://img.shields.io/github/v/release/Fran6nd/ip_switcher)](https://github.com/Fran6nd/ip_switcher/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/Fran6nd/ip_switcher/total)](https://github.com/Fran6nd/ip_switcher/releases)
+
+## Quick Download
+
+🚀 **Get the latest builds directly from CI:**
+
+| Platform | Architecture | Download Link |
+|----------|-------------|---------------|
+| **Windows** | x86_64 | [⬇️ Latest Windows Build](https://github.com/Fran6nd/ip_switcher/actions/workflows/build.yml?query=is%3Asuccess+branch%3Amain) |
+| **macOS** | Intel (x86_64) | [⬇️ Latest macOS Intel Build](https://github.com/Fran6nd/ip_switcher/actions/workflows/build.yml?query=is%3Asuccess+branch%3Amain) |
+| **macOS** | Apple Silicon (ARM64) | [⬇️ Latest macOS ARM Build](https://github.com/Fran6nd/ip_switcher/actions/workflows/build.yml?query=is%3Asuccess+branch%3Amain) |
+
+> **Note**: Click on the latest successful build, then scroll down to "Artifacts" section to download the builds.
+
 ## Overview
 
 IP Switcher is a cross-platform application that allows you to easily switch between different IP address configurations (DHCP or Static) for your network interface. You can use predefined presets or manually switch between IP configurations with a simple GUI. The application is available for:
