@@ -98,6 +98,10 @@ build: clean-xattrs
 		--include-package=tkinter \
 		--include-package=_tkinter \
 		--assume-yes-for-downloads \
+		--nofollow-import-to=unittest \
+		--nofollow-import-to=test \
+		--include-module=_bisect \
+		--include-module=_json \
 		ip_switcher.py
 
 

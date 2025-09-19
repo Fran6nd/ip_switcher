@@ -61,19 +61,22 @@ jobs:
 
     - name: Build with Nuitka
       run: |
+        # Common Nuitka flags
+        COMMON_FLAGS="--onefile --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter --assume-yes-for-downloads --nofollow-import-to=unittest --nofollow-import-to=test --include-module=_bisect --include-module=_json"
+
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          # Build for Windows - check if icon exists
+          # Build for Windows - ensure .exe output
           if [ -f "ip_switcher.ico" ]; then
-            python -m nuitka --onefile --windows-icon-from-ico=ip_switcher.ico --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter --assume-yes-for-downloads ip_switcher.py
+            python -m nuitka $COMMON_FLAGS --windows-icon-from-ico=ip_switcher.ico --output-filename=ip_switcher.exe ip_switcher.py
           else
-            python -m nuitka --onefile --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter --assume-yes-for-downloads ip_switcher.py
+            python -m nuitka $COMMON_FLAGS --output-filename=ip_switcher.exe ip_switcher.py
           fi
         else
           # Build for macOS - check if icon exists
           if [ -f "ip_switcher.icns" ]; then
-            python -m nuitka --onefile --macos-app-icon=ip_switcher.icns --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter --assume-yes-for-downloads ip_switcher.py
+            python -m nuitka $COMMON_FLAGS --macos-app-icon=ip_switcher.icns ip_switcher.py
           else
-            python -m nuitka --onefile --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter --assume-yes-for-downloads ip_switcher.py
+            python -m nuitka $COMMON_FLAGS ip_switcher.py
           fi
         fi
       shell: bash
