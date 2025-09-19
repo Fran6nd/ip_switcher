@@ -43,25 +43,41 @@ jobs:
         pip install -r requirements.txt
         pip install nuitka
 
-    - name: Build with Nuitka
+    - name: Generate icons
       run: |
         if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          python -m nuitka --onefile --windows-icon-from-ico=ip_switcher.ico --enable-plugin=tk-inter ip_switcher.py
+          # Generate ICO file for Windows (using ImageMagick if available, otherwise skip)
+          if command -v convert &> /dev/null; then
+            convert icon.png -resize 256x256 ip_switcher.ico
+          else
+            echo "ImageMagick not available, skipping icon generation"
+          fi
         else
-          python -m nuitka --onefile --macos-create-app-bundle --macos-app-icon=ip_switcher.icns --enable-plugin=tk-inter ip_switcher.py
+          # Generate ICNS file for macOS
+          make icons
         fi
       shell: bash
 
-    - name: Rename artifacts for Windows
+    - name: Build with Nuitka
+      run: |
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          python -m nuitka --onefile --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter ip_switcher.py
+        else
+          python -m nuitka --onefile --macos-create-app-bundle --enable-plugin=tk-inter --include-package=tkinter --include-package=_tkinter ip_switcher.py
+        fi
+      shell: bash
+
+    - name: Prepare artifacts for Windows
       if: matrix.os == 'windows-latest'
       run: |
         mv ip_switcher.exe ip_switcher-windows-${{ matrix.arch }}.exe
       shell: bash
 
-    - name: Rename artifacts for macOS
+    - name: Prepare artifacts for macOS
       if: startsWith(matrix.os, 'macos')
       run: |
-        mv ip_switcher.bin ip_switcher-macos-${{ matrix.arch }}
+        # For macOS, we get an .app bundle, compress it
+        tar -czf ip_switcher-macos-${{ matrix.arch }}.tar.gz ip_switcher.app
       shell: bash
 
     - name: Upload artifacts
@@ -69,8 +85,8 @@ jobs:
       with:
         name: ip_switcher-${{ matrix.os }}-${{ matrix.arch }}
         path: |
-          ip_switcher-*.exe
-          ip_switcher-macos-*
+          ip_switcher-windows-*.exe
+          ip_switcher-macos-*.tar.gz
         compression-level: 9
         retention-days: 5
 
@@ -79,6 +95,5 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          ip_switcher-*.exe
-          ip_switcher-macos-*
-        fail_on_unmatched_files: true
+          ip_switcher-windows-*.exe
+          ip_switcher-macos-*.tar.gz

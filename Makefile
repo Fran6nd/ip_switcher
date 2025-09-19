@@ -51,7 +51,7 @@ else
     endif
 endif
 
-all: icons build
+all: check-deps icons build
 
 $(ICON_ICNS): $(ICON_PNG)
 	@echo "Generating .icns from icon.png..."
@@ -67,30 +67,17 @@ $(ICON_ICNS): $(ICON_PNG)
 	@sips -z 512 512   $< --out $(ICONSET_DIR)/icon_512x512.png
 	@cp $< $(ICONSET_DIR)/icon_512x512@2x.png
 	@iconutil -c icns $(ICONSET_DIR)
-	@if [ -e $(APP_NAME).icns ]; then \
-		echo "Icon already in place."; \
-	else \
-		mv $(APP_NAME).icns .; \
-	fi
-
 	@rm -r $(ICONSET_DIR)
 
-icons: $(ICON_PNG)
+$(ICON_ICO): $(ICON_PNG)
+	@echo "Generating .ico from icon.png..."
+	@sips -s format microsoft-icon $< --out $@
+
+icons:
 ifeq ($(SYSTEM),macOS)
-	@echo "Generating macOS icons..."
-	@mkdir -p $(ICONSET_DIR)
-	@sips -z 16 16     $< --out $(ICONSET_DIR)/icon_16x16.png
-	@sips -z 32 32     $< --out $(ICONSET_DIR)/icon_16x16@2x.png
-	@sips -z 32 32     $< --out $(ICONSET_DIR)/icon_32x32.png
-	@sips -z 64 64     $< --out $(ICONSET_DIR)/icon_32x32@2x.png
-	@sips -z 128 128   $< --out $(ICONSET_DIR)/icon_128x128.png
-	@sips -z 256 256   $< --out $(ICONSET_DIR)/icon_128x128@2x.png
-	@sips -z 256 256   $< --out $(ICONSET_DIR)/icon_256x256.png
-	@sips -z 512 512   $< --out $(ICONSET_DIR)/icon_256x256@2x.png
-	@sips -z 512 512   $< --out $(ICONSET_DIR)/icon_512x512.png
-	@cp $< $(ICONSET_DIR)/icon_512x512@2x.png
-	@iconutil -c icns $(ICONSET_DIR)
-	@rm -r $(ICONSET_DIR)
+	@$(MAKE) $(ICON_ICNS)
+else ifeq ($(SYSTEM),Windows)
+	@$(MAKE) $(ICON_ICO)
 endif
 
 clean-xattrs:
@@ -142,5 +129,3 @@ check-deps:
 	@echo "All dependencies found."
 
 .PHONY: all icons build clean install check-deps clean-xattrs
-
-all: check-deps icons build
