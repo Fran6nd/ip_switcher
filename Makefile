@@ -97,6 +97,7 @@ build: clean-xattrs
 		--enable-plugin=tk-inter \
 		--include-package=tkinter \
 		--include-package=_tkinter \
+		--assume-yes-for-downloads \
 		ip_switcher.py
 
 
