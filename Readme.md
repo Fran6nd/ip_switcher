@@ -2,7 +2,9 @@
 
 ## Overview
 
-IP Switcher is a macOS and Windows application that allows you to easily switch between different IP address configurations (DHCP or Static) for your network interface. You can use predefined presets or manually switch between IP configurations with a simple GUI.
+IP Switcher is a cross-platform application that allows you to easily switch between different IP address configurations (DHCP or Static) for your network interface. You can use predefined presets or manually switch between IP configurations with a simple GUI. The application is available for:
+- Windows (x86_64 and ARM64)
+- macOS (Intel and Apple Silicon)
 
 ## Features
 
@@ -16,18 +18,56 @@ IP Switcher is a macOS and Windows application that allows you to easily switch 
 - macOS 10.14 or higher.
 - The application is bundled as a macOS `.app` and a Windows `.exe`, which are standalone and does not require installation.
 
-## Download the macOS Binary
+## Download and Installation
 
-You can download the latest version of IP Switcher Pro for macOS from the following link:
+You can download the latest version of IP Switcher from the [Releases](https://github.com/Fran6nd/ip_switcher/releases) page. Choose the appropriate version for your platform:
 
-[Download IP Switcher](./dist/ip_switcher.zip)
+- For Windows:
+  - `ip_switcher-windows-x86_64.exe` for 64-bit Intel/AMD processors
+  - `ip_switcher-windows-arm64.exe` for ARM processors
 
-## Installation and Usage
+- For macOS:
+  - `ip_switcher-macos-x86_64` for Intel Macs
+  - `ip_switcher-macos-arm64` for Apple Silicon Macs
 
-1. **Download** the `.zip` file.
-2. **Unzip** the downloaded file. This will extract the `ip_switcher.app` bundle.
-3. **Move** the `ip_switcher.app` to your `Applications` folder for easy access (optional).
-4. **Double-click** the `ip_switcher.app` to launch the application.
+### Installation
+
+#### Windows
+1. Download the appropriate `.exe` file for your system
+2. Move it to your desired location
+3. Double-click to run
+
+#### macOS
+1. Download the appropriate binary for your system
+2. Make it executable: `chmod +x ip_switcher-macos-*`
+3. Run it directly or move to `/Applications`
+
+## Building from Source
+
+### Prerequisites
+- Python 3.10 or higher
+- pip (Python package installer)
+
+### Build Steps
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Fran6nd/ip_switcher.git
+   cd ip_switcher
+   ```
+
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   pip install nuitka
+   ```
+
+3. Build the application:
+   ```bash
+   make
+   ```
+
+The build process will automatically detect your operating system and create the appropriate binary.
 
 ## How to Use
 
