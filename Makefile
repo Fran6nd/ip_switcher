@@ -24,7 +24,7 @@ else
         SYSTEM := macOS
         PYTHON ?= python3
         BINARY_EXT := .bin
-        NUITKA_FLAGS := --macos-app-icon=$(ICON_ICNS)
+        NUITKA_FLAGS := --macos-create-app-bundle --macos-app-icon=$(ICON_ICNS)
         
         # macOS: Try multiple common Tcl/Tk locations
         TCL_PATHS := /opt/local/lib/tcl8.6 /usr/local/lib/tcl8.6 /opt/homebrew/lib/tcl8.6 /System/Library/Frameworks/Tcl.framework
@@ -91,6 +91,24 @@ endif
 build: clean-xattrs
 	@echo "Building standalone app with Nuitka for $(SYSTEM)..."
 	@echo "Using Tcl/Tk paths: $(TCL_PATH) $(TK_PATH)"
+ifeq ($(SYSTEM),macOS)
+	NUITKA_MACOS_CODESIGN=no $(PYTHON) -m nuitka \
+		--onefile \
+		$(NUITKA_FLAGS) \
+		--enable-plugin=tk-inter \
+		--include-package=tkinter \
+		--include-package=_tkinter \
+		--assume-yes-for-downloads \
+		--nofollow-import-to=unittest \
+		--nofollow-import-to=test \
+		--include-module=_bisect \
+		--include-module=_json \
+		ip_switcher.py
+	@echo "Cleaning extended attributes and resource forks from built app..."
+	@find ip_switcher.app -type f -exec xattr -c {} \; 2>/dev/null || true
+	@find ip_switcher.app -name "._*" -delete 2>/dev/null || true
+	@find ip_switcher.app -name ".DS_Store" -delete 2>/dev/null || true
+else
 	$(PYTHON) -m nuitka \
 		--onefile \
 		$(NUITKA_FLAGS) \
@@ -103,6 +121,7 @@ build: clean-xattrs
 		--include-module=_bisect \
 		--include-module=_json \
 		ip_switcher.py
+endif
 
 
 clean:

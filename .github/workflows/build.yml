@@ -72,12 +72,17 @@ jobs:
             python -m nuitka $COMMON_FLAGS --output-filename=ip_switcher.exe ip_switcher.py
           fi
         else
-          # Build for macOS - check if icon exists
+          # Build for macOS - create .app bundle, disable codesigning
+          export NUITKA_MACOS_CODESIGN=no
           if [ -f "ip_switcher.icns" ]; then
-            python -m nuitka $COMMON_FLAGS --macos-app-icon=ip_switcher.icns ip_switcher.py
+            python -m nuitka $COMMON_FLAGS --macos-create-app-bundle --macos-app-icon=ip_switcher.icns ip_switcher.py
           else
-            python -m nuitka $COMMON_FLAGS ip_switcher.py
+            python -m nuitka $COMMON_FLAGS --macos-create-app-bundle ip_switcher.py
           fi
+          # Clean extended attributes from .app bundle
+          find ip_switcher.app -type f -exec xattr -c {} \; 2>/dev/null || true
+          find ip_switcher.app -name "._*" -delete 2>/dev/null || true
+          find ip_switcher.app -name ".DS_Store" -delete 2>/dev/null || true
         fi
       shell: bash
 
@@ -94,11 +99,11 @@ jobs:
     - name: Prepare artifacts for macOS
       if: startsWith(matrix.os, 'macos')
       run: |
-        # For macOS, we get a .bin file
-        if [ -f "ip_switcher.bin" ]; then
-          mv ip_switcher.bin ip_switcher-macos-${{ matrix.arch }}
+        # For macOS, we get a .app bundle, compress it
+        if [ -d "ip_switcher.app" ]; then
+          tar -czf ip_switcher-macos-${{ matrix.arch }}.tar.gz ip_switcher.app
         else
-          echo "Warning: ip_switcher.bin not found"
+          echo "Warning: ip_switcher.app not found"
         fi
       shell: bash
 
@@ -108,7 +113,7 @@ jobs:
         name: ip_switcher-${{ matrix.os }}-${{ matrix.arch }}
         path: |
           ip_switcher-windows-*.exe
-          ip_switcher-macos-*
+          ip_switcher-macos-*.tar.gz
         compression-level: 9
         retention-days: 5
         if-no-files-found: warn
@@ -119,5 +124,5 @@ jobs:
       with:
         files: |
           ip_switcher-windows-*.exe
-          ip_switcher-macos-*
+          ip_switcher-macos-*.tar.gz
         fail_on_unmatched_files: false
